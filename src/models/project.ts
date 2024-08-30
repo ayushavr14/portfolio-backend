@@ -7,6 +7,8 @@ export interface IProject extends Document {
   demoLink: string;
   sourceCodeLink: string;
   image: string[];
+  tag: string;
+  status: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +21,8 @@ const projectSchema: Schema = new Schema(
     demoLink: { type: String, required: false },
     sourceCodeLink: { type: String, required: false },
     image: { type: [String], required: false },
+    tag: { type: String, required: false },
+    status: { type: String, required: false },
   },
   { timestamps: true }
 );

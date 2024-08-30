@@ -1,33 +1,71 @@
 import { Request, Response } from "express";
 import Project from "../models/project";
 import { io } from "../server";
-import { cloudinary } from "../config/cloudinary";
 
 export const createProject = async (req: Request, res: Response) => {
   try {
-    const image = req.file ? req.file.path : null;
-
-    const project = new Project({
-      ...req.body,
-      image,
-    });
-    await project.save();
-
-    io.emit("project-updated", project); // Emit to all clients
-
-    res.status(201).json(project);
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: "An unknown error occurred" });
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
+      return res.status(400).json({ msg: "No images uploaded" });
     }
+
+    const imageUrls = files.map((file) => file.path);
+
+    const newProject = new Project({
+      ...req.body,
+      image: imageUrls,
+    });
+
+    const savedProject = await newProject.save();
+
+    io.emit("project-created", savedProject);
+    res.status(201).json(savedProject);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
 export const getProjects = async (req: Request, res: Response) => {
   try {
-    const projects = await Project.find();
+    console.log("Query Parameters:", req.query); // Log the query parameters
+
+    const { search, technology, date, status } = req.query;
+
+    // Initialize a filter object
+    let filter: any = {};
+
+    // Apply search filter (search by title, description, or tags)
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { tag: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // Filter by technology (assuming technology is an array in the schema)
+    if (technology) {
+      filter.technologies = { $in: [technology] };
+    }
+
+    // Filter by status
+    if (status) {
+      filter.status = status;
+    }
+
+    // Filter by date
+    if (date) {
+      const startDate = new Date(date as string);
+      const endDate = new Date(date as string);
+      endDate.setHours(23, 59, 59, 999); // End of the day
+      filter.createdAt = { $gte: startDate, $lte: endDate };
+    }
+
+    console.log("Filters Applied:", filter); // Log the constructed filter object
+
+    // Fetch projects based on the constructed filter
+    const projects = await Project.find(filter);
+
     res.status(200).json(projects);
   } catch (error) {
     if (error instanceof Error) {
@@ -40,29 +78,22 @@ export const getProjects = async (req: Request, res: Response) => {
 
 export const updateProject = async (req: Request, res: Response) => {
   try {
-    // Handle multiple image uploads
     const newImageFiles = req.files as Express.Multer.File[]; // Get new images
-    const newImages = newImageFiles
+    const newImagesUrls = newImageFiles
       ? newImageFiles.map((file) => file.path)
       : [];
 
-    // Find the existing project
     const project = await Project.findById(req.params.id);
 
     if (!project) {
       return res.status(404).json({ msg: "Project not found" });
     }
 
-    // Extract the old images (for deletion)
-    const oldImages = project.image || [];
-
-    // Update project data with new images
     const updatedData = {
       ...req.body,
-      images: [...newImages], // Set the images to the new list of images
+      image: [...req.body.image, ...newImagesUrls],
     };
 
-    // Update the project
     const updatedProject = await Project.findByIdAndUpdate(
       req.params.id,
       updatedData,
@@ -73,19 +104,7 @@ export const updateProject = async (req: Request, res: Response) => {
       return res.status(404).json({ msg: "Project not found" });
     }
 
-    // Delete old images from Cloudinary that are not in the new list
-    const oldImagePublicIds = oldImages.map((url) => {
-      // Extract the public ID from the Cloudinary URL
-      const segments = url.split("/");
-      return segments[segments.length - 1].split(".")[0];
-    });
-
-    oldImagePublicIds.forEach(async (publicId) => {
-      await cloudinary.v2.uploader.destroy(publicId);
-    });
-
-    // Emit real-time update
-    io.emit("project-updated", updatedProject); // Emit to all clients
+    io.emit("project-updated", updatedProject);
 
     res.json(updatedProject);
   } catch (error) {

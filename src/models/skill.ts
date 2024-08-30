@@ -9,7 +9,6 @@ export interface ISkill extends Document {
 const skillSchema: Schema = new Schema(
   {
     name: { type: String, required: true },
-    level: { type: String, required: true },
   },
   { timestamps: true }
 );

@@ -4,6 +4,10 @@ import { io } from "../server";
 
 export const createProject = async (req: Request, res: Response) => {
   try {
+    const { technologies, ...restData } = req.body;
+
+    const singleTechnology = technologies.split(",");
+
     const files = req.files as Express.Multer.File[];
     if (!files || files.length === 0) {
       return res.status(400).json({ msg: "No images uploaded" });
@@ -12,7 +16,8 @@ export const createProject = async (req: Request, res: Response) => {
     const imageUrls = files.map((file) => file.path);
 
     const newProject = new Project({
-      ...req.body,
+      ...restData,
+      technologies: singleTechnology,
       image: imageUrls,
     });
 
@@ -29,8 +34,6 @@ export const createProject = async (req: Request, res: Response) => {
 
 export const getProjects = async (req: Request, res: Response) => {
   try {
-    console.log("Query Parameters:", req.query); // Log the query parameters
-
     const { search, technology, date, status } = req.query;
 
     // Initialize a filter object
@@ -63,8 +66,6 @@ export const getProjects = async (req: Request, res: Response) => {
       filter.createdAt = { $gte: startDate, $lte: endDate };
     }
 
-    console.log("Filters Applied:", filter); // Log the constructed filter object
-
     // Fetch projects based on the constructed filter
     const projects = await Project.find(filter);
 
@@ -80,7 +81,11 @@ export const getProjects = async (req: Request, res: Response) => {
 
 export const updateProject = async (req: Request, res: Response) => {
   try {
-    const newImageFiles = req.files as Express.Multer.File[]; // Get new images
+    const { technologies, ...restData } = req.body;
+
+    const singleTechnology = technologies.split(",");
+
+    const newImageFiles = req.files as Express.Multer.File[];
     const newImagesUrls = newImageFiles
       ? newImageFiles.map((file) => file.path)
       : [];
@@ -92,7 +97,8 @@ export const updateProject = async (req: Request, res: Response) => {
     }
 
     const updatedData = {
-      ...req.body,
+      ...restData,
+      technologies: singleTechnology,
       image: [...req.body.image, ...newImagesUrls],
     };
 
@@ -110,6 +116,8 @@ export const updateProject = async (req: Request, res: Response) => {
 
     res.json(updatedProject);
   } catch (error) {
+    console.log(error);
+
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
     } else {

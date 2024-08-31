@@ -12,7 +12,7 @@ router.post("/", createExperience);
 
 router.get("/", getExperiences);
 
-router.put("/:id", updateExperience);
+router.patch("/:id", updateExperience);
 
 router.delete("/:id", deleteExperience);
 

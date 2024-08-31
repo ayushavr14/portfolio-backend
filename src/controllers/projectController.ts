@@ -19,7 +19,9 @@ export const createProject = async (req: Request, res: Response) => {
     const savedProject = await newProject.save();
 
     io.emit("project-created", savedProject);
-    res.status(201).json(savedProject);
+    res
+      .status(201)
+      .json({ msg: "Project Added Successfully", savedProject: savedProject });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

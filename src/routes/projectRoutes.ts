@@ -11,8 +11,8 @@ const router = Router();
 
 // Route to handle multiple image uploads
 router.get("/", getProjects);
-router.post("/", upload.array("images", 4), createProject);
-router.patch("/:id", upload.array("images", 4), updateProject);
+router.post("/", upload.array("image_upload", 4), createProject);
+router.patch("/:id", upload.array("image_upload", 4), updateProject);
 router.delete("/:id", deleteProject);
 
 export default router;

@@ -7,7 +7,7 @@ export const createSkill = async (req: Request, res: Response) => {
     const skill = new Skill(req.body);
     await skill.save();
 
-    io.emit("skill-updated", skill); // Emit to all clients
+    io.emit("skill-updated", skill);
 
     res.status(201).json(skill);
   } catch (error) {

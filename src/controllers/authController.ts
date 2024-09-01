@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user";
 import UserDetails from "../models/userDetails";
+import { io } from "../server";
 
 export const registerUser = async (req: Request, res: Response) => {
   const { name, email, password } = req.body;
@@ -85,34 +86,55 @@ export const userDetails = async (req: Request, res: Response) => {
 // Edit User Details
 export const editUser = async (req: Request, res: Response) => {
   const { id } = req.params;
-  console.log(req.body);
 
   const newCvFiles = req.files as Express.Multer.File[];
-  console.log(newCvFiles);
-
   const newCvUrls = newCvFiles ? newCvFiles.map((file) => file.path) : [];
-  console.log(newCvUrls);
+
+  // Retrieve the existing user details
+  const userDetails = await UserDetails.findById(id);
+
+  if (!userDetails) {
+    return res.status(404).json({ error: "User details not found." });
+  }
+
+  // Process cvLink
+  let updatedCvLinks = req.body.cvLink || [];
+  if (typeof updatedCvLinks === "string") {
+    updatedCvLinks = [updatedCvLinks];
+  }
+
+  // Remove null or empty values and add new CV links
+  updatedCvLinks = updatedCvLinks.filter(
+    (link: string) => link !== null && link !== ""
+  );
+  updatedCvLinks = [...updatedCvLinks, ...newCvUrls];
 
   const updatedData = {
     ...req.body,
-    cvLink: [req.body.cvLink, ...newCvUrls],
+    cvLink: updatedCvLinks,
   };
 
   try {
-    const userDetails = await UserDetails.findByIdAndUpdate(id, updatedData, {
-      new: true,
-    });
+    // Update user details
+    const updatedUserDetails = await UserDetails.findByIdAndUpdate(
+      id,
+      updatedData,
+      { new: true }
+    );
 
-    if (!userDetails) {
+    if (!updatedUserDetails) {
       return res.status(404).json({ error: "User details not found." });
     }
 
+    // Emit the update event
+    io.emit("user-updated", updatedUserDetails);
+
     res.status(200).json({
       msg: "User details updated successfully",
-      userDetails, // If this contains nested objects, inspect it here
+      userDetails: updatedUserDetails,
     });
   } catch (error) {
-    console.error("Error updating user details:", error); // Log error for better understanding
+    console.error("Error updating user details:", error);
     res.status(500).json({ error: "Failed to edit user details." });
   }
 };

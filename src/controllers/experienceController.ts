@@ -7,7 +7,7 @@ export const createExperience = async (req: Request, res: Response) => {
     const experience = new Experience(req.body);
     await experience.save();
 
-    io.emit("experience-updated", experience);
+    io.emit("experience-created", experience);
 
     res.status(201).json(experience);
   } catch (error) {

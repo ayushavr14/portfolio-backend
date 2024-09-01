@@ -47,12 +47,20 @@ io.on("connection", (socket) => {
     io.emit("skill-deleted", deletedSkillId);
   });
 
+  socket.on("experience-created", (createdExperience) => {
+    io.emit("experience-created", createdExperience);
+  });
+
   socket.on("experience-updated", (updatedExperience) => {
     io.emit("experience-updated", updatedExperience);
   });
 
   socket.on("experience-deleted", (deletedExperience) => {
     io.emit("experience-deleted", deletedExperience);
+  });
+
+  socket.on("user-updated", (updatedUser) => {
+    io.emit("user-updated", updatedUser);
   });
 });
 

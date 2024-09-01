@@ -1,17 +1,17 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUserDetails extends Document {
-  userId: Schema.Types.ObjectId;
+  user: { type: String };
   about?: string;
-  cvLink?: string;
+  cvLink?: string[];
   githubLink?: string;
   linkedinLink?: string;
 }
 
 const userDetailsSchema: Schema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  user: { type: String },
   about: { type: String },
-  cvLink: { type: String },
+  cvLink: { type: [String], required: false },
   githubLink: { type: String },
   linkedinLink: { type: String },
 });

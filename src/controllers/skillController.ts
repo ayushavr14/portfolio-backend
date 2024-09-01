@@ -4,7 +4,9 @@ import { io } from "../server"; // Import the Socket.IO instance
 
 export const createSkill = async (req: Request, res: Response) => {
   try {
-    const skill = new Skill(req.body);
+    const { name } = req.body;
+    const skills = name.split(",");
+    const skill = new Skill(skills);
     await skill.save();
 
     io.emit("skill-updated", skill);
@@ -34,18 +36,18 @@ export const getSkills = async (req: Request, res: Response) => {
 
 export const updateSkill = async (req: Request, res: Response) => {
   try {
-    const skill = await Skill.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const skill = await Skill.findByIdAndUpdate(req.params.id, req.body);
 
     if (!skill) {
       return res.status(404).json({ msg: "Skill not found" });
     }
 
-    io.emit("skill-updated", skill); // Emit to all clients
+    io.emit("skill-updated", skill);
 
     res.json(skill);
   } catch (error) {
+    console.log(error);
+
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
     } else {

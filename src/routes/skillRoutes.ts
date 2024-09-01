@@ -12,7 +12,7 @@ router.post("/", createSkill);
 
 router.get("/", getSkills);
 
-router.put("/:id", updateSkill);
+router.patch("/:id", updateSkill);
 
 router.delete("/:id", deleteSkill);
 

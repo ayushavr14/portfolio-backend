@@ -73,8 +73,11 @@ export const userDetails = async (req: Request, res: Response) => {
     });
 
     await userDetails.save();
-    res.status(201).json(userDetails);
+    res
+      .status(201)
+      .json({ msg: "User details added successfully", userDetails });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Failed to add user details." });
   }
 };
@@ -82,12 +85,17 @@ export const userDetails = async (req: Request, res: Response) => {
 // Edit User Details
 export const editUser = async (req: Request, res: Response) => {
   const { id } = req.params;
+  console.log(req.body);
+
   const newCvFiles = req.files as Express.Multer.File[];
+  console.log(newCvFiles);
+
   const newCvUrls = newCvFiles ? newCvFiles.map((file) => file.path) : [];
+  console.log(newCvUrls);
 
   const updatedData = {
     ...req.body,
-    image: [...req.body.cvLink, ...newCvUrls],
+    cvLink: [req.body.cvLink, ...newCvUrls],
   };
 
   try {
@@ -99,8 +107,27 @@ export const editUser = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User details not found." });
     }
 
+    res.status(200).json({
+      msg: "User details updated successfully",
+      userDetails, // If this contains nested objects, inspect it here
+    });
+  } catch (error) {
+    console.error("Error updating user details:", error); // Log error for better understanding
+    res.status(500).json({ error: "Failed to edit user details." });
+  }
+};
+
+export const getUserDetails = async (req: Request, res: Response) => {
+  try {
+    const userDetails = await UserDetails.find();
+
+    if (!userDetails) {
+      return res.status(404).json({ error: "User details not found." });
+    }
+
     res.status(200).json(userDetails);
   } catch (error) {
-    res.status(500).json({ error: "Failed to edit user details." });
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve user details." });
   }
 };

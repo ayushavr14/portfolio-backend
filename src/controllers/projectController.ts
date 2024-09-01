@@ -34,39 +34,25 @@ export const createProject = async (req: Request, res: Response) => {
 
 export const getProjects = async (req: Request, res: Response) => {
   try {
-    const { search, technology, date, status } = req.query;
+    const { search, technology, status } = req.query;
 
-    // Initialize a filter object
     let filter: any = {};
 
-    // Apply search filter (search by title, description, or tags)
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
-        { tag: { $regex: search, $options: "i" } },
       ];
     }
 
-    // Filter by technology (assuming technology is an array in the schema)
     if (technology) {
       filter.technologies = { $in: [technology] };
     }
 
-    // Filter by status
     if (status) {
       filter.status = status;
     }
 
-    // Filter by date
-    if (date) {
-      const startDate = new Date(date as string);
-      const endDate = new Date(date as string);
-      endDate.setHours(23, 59, 59, 999); // End of the day
-      filter.createdAt = { $gte: startDate, $lte: endDate };
-    }
-
-    // Fetch projects based on the constructed filter
     const projects = await Project.find(filter);
 
     res.status(200).json(projects);
@@ -83,43 +69,33 @@ export const updateProject = async (req: Request, res: Response) => {
   try {
     const { technologies, image: updatedImageList, ...restData } = req.body;
 
-    // Ensure technologies is a string and split it into an array
     const singleTechnology =
       typeof technologies === "string" ? technologies.split(",") : [];
 
-    // Handle file uploads
-    const newImageFiles = req.files as Express.Multer.File[]; // Files from the request
+    const newImageFiles = req.files as Express.Multer.File[];
     const newImageUrls = newImageFiles
       ? newImageFiles.map((file) => file.path)
       : [];
 
-    // Find the project by ID
     const project = await Project.findById(req.params.id);
 
     if (!project) {
       return res.status(404).json({ msg: "Project not found" });
     }
 
-    // Ensure updatedImageList is an array or default to an empty array
-    const updatedImageArray = Array.isArray(updatedImageList)
-      ? updatedImageList
-      : [];
-
-    // Combine existing images with new images and filter out images that are removed
     const existingImages = Array.isArray(project.image) ? project.image : [];
-    const combinedImages = [
-      ...newImageUrls,
-      ...existingImages.filter((img) => updatedImageArray.includes(img)),
-    ];
 
-    // Prepare the data to be updated
+    const combinedImages =
+      newImageUrls.length > 0
+        ? [...existingImages, ...newImageUrls]
+        : existingImages;
+
     const updatedData = {
       ...restData,
       technologies: singleTechnology,
       image: combinedImages,
     };
 
-    // Update the project
     const updatedProject = await Project.findByIdAndUpdate(
       req.params.id,
       updatedData,
@@ -130,7 +106,6 @@ export const updateProject = async (req: Request, res: Response) => {
       return res.status(404).json({ msg: "Project not found" });
     }
 
-    // Emit the updated project
     io.emit("project-updated", updatedProject);
 
     res.json(updatedProject);

@@ -31,6 +31,10 @@ io.on("connection", (socket) => {
     console.log(`User disconnected with id: ${socket.id}`);
   });
 
+  socket.on("project-created", (createdProject) => {
+    io.emit("project-created", createdProject);
+  });
+
   socket.on("project-updated", (updatedProject) => {
     io.emit("project-updated", updatedProject);
   });

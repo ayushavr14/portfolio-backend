@@ -11,7 +11,7 @@ import experienceRoutes from "./routes/experienceRoutes";
 import { Server } from "socket.io";
 
 const app: Application = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000; // Default port if not specified
 
 // Connect to MongoDB
 connectDB();
@@ -19,23 +19,42 @@ connectDB();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173", // Your React app URL
     methods: ["GET", "POST"],
   },
 });
 
 io.on("connection", (socket) => {
-  console.log("A user connected", socket.id);
+  console.log(`A user connected with id: ${socket.id}`);
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected");
+    console.log(`User disconnected with id: ${socket.id}`);
+  });
+
+  socket.on("project-updated", (updatedProject) => {
+    io.emit("project-updated", updatedProject);
+  });
+
+  socket.on("project-deleted", (deletedProject) => {
+    io.emit("project-deleted", deletedProject);
+  });
+
+  socket.on("skill-updated", (updatedSkill) => {
+    io.emit("skill-updated", updatedSkill);
+  });
+
+  socket.on("skill-deleted", (deletedSkillId) => {
+    io.emit("skill-deleted", deletedSkillId);
+  });
+
+  socket.on("experience-updated", (updatedExperience) => {
+    io.emit("experience-updated", updatedExperience);
+  });
+
+  socket.on("experience-deleted", (deletedExperience) => {
+    io.emit("experience-deleted", deletedExperience);
   });
 });
-
-const corsOptions = {
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-};
 
 // Middleware
 app.use(cors());
@@ -46,8 +65,8 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/experiences", experienceRoutes);
 
-app.listen(PORT, () => {
-  console.log(`http://localhost:${PORT}`);
+server.listen(PORT, () => {
+  console.log(`Server is running at http://localhost:${PORT}`);
 });
 
 export { io };

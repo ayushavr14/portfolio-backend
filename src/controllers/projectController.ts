@@ -81,27 +81,45 @@ export const getProjects = async (req: Request, res: Response) => {
 
 export const updateProject = async (req: Request, res: Response) => {
   try {
-    const { technologies, ...restData } = req.body;
+    const { technologies, image: updatedImageList, ...restData } = req.body;
 
-    const singleTechnology = technologies.split(",");
+    // Ensure technologies is a string and split it into an array
+    const singleTechnology =
+      typeof technologies === "string" ? technologies.split(",") : [];
 
-    const newImageFiles = req.files as Express.Multer.File[];
-    const newImagesUrls = newImageFiles
+    // Handle file uploads
+    const newImageFiles = req.files as Express.Multer.File[]; // Files from the request
+    const newImageUrls = newImageFiles
       ? newImageFiles.map((file) => file.path)
       : [];
 
+    // Find the project by ID
     const project = await Project.findById(req.params.id);
 
     if (!project) {
       return res.status(404).json({ msg: "Project not found" });
     }
 
+    // Ensure updatedImageList is an array or default to an empty array
+    const updatedImageArray = Array.isArray(updatedImageList)
+      ? updatedImageList
+      : [];
+
+    // Combine existing images with new images and filter out images that are removed
+    const existingImages = Array.isArray(project.image) ? project.image : [];
+    const combinedImages = [
+      ...newImageUrls,
+      ...existingImages.filter((img) => updatedImageArray.includes(img)),
+    ];
+
+    // Prepare the data to be updated
     const updatedData = {
       ...restData,
       technologies: singleTechnology,
-      image: [...req.body.image, ...newImagesUrls],
+      image: combinedImages,
     };
 
+    // Update the project
     const updatedProject = await Project.findByIdAndUpdate(
       req.params.id,
       updatedData,
@@ -112,6 +130,7 @@ export const updateProject = async (req: Request, res: Response) => {
       return res.status(404).json({ msg: "Project not found" });
     }
 
+    // Emit the updated project
     io.emit("project-updated", updatedProject);
 
     res.json(updatedProject);

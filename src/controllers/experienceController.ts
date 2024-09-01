@@ -7,7 +7,7 @@ export const createExperience = async (req: Request, res: Response) => {
     const experience = new Experience(req.body);
     await experience.save();
 
-    io.emit("experience-updated", experience); // Emit to all clients
+    io.emit("experience-updated", experience);
 
     res.status(201).json(experience);
   } catch (error) {
@@ -44,7 +44,7 @@ export const updateExperience = async (req: Request, res: Response) => {
       return res.status(404).json({ msg: "Experience not found" });
     }
 
-    io.emit("experience-updated", experience); // Emit to all clients
+    io.emit("experience-updated", experience);
 
     res.json(experience);
   } catch (error) {
@@ -64,7 +64,7 @@ export const deleteExperience = async (req: Request, res: Response) => {
       return res.status(404).json({ msg: "Experience not found" });
     }
 
-    io.emit("experience-deleted", experience._id); // Emit deletion event with experience ID
+    io.emit("experience-deleted", experience._id);
 
     res.json({ msg: "Experience removed" });
   } catch (error) {

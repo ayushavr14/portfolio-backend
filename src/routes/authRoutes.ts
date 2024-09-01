@@ -8,13 +8,14 @@ import {
 } from "../controllers/authController";
 // import { auth } from "../middleware/authMiddleware";
 import { upload } from "../config/cloudinary";
+import { auth } from "../middleware/authMiddleware";
 
 const router = Router();
 
-router.post("/register", registerUser);
+// router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.post("/user-details", upload.array("cv", 1), userDetails);
-router.patch("/user-details/:id", upload.array("cv", 1), editUser);
-router.get("/user-details", getUserDetails);
+// router.post("/user-details", auth, upload.array("cv", 1), userDetails);
+router.patch("/user-details/:id", auth, upload.array("cv", 1), editUser);
+router.get("/user-details", auth, getUserDetails);
 
 export default router;

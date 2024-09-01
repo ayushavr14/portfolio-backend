@@ -5,15 +5,16 @@ import {
   getExperiences,
   updateExperience,
 } from "../controllers/experienceController";
+import { auth } from "../middleware/authMiddleware";
 
 const router = Router();
 
-router.post("/", createExperience);
+router.post("/", auth, createExperience);
 
 router.get("/", getExperiences);
 
-router.patch("/:id", updateExperience);
+router.patch("/:id", auth, updateExperience);
 
-router.delete("/:id", deleteExperience);
+router.delete("/:id", auth, deleteExperience);
 
 export default router;

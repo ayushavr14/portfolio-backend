@@ -59,7 +59,6 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-// Add User Details
 export const userDetails = async (req: Request, res: Response) => {
   const files = req.files as Express.Multer.File[];
   if (!files || files.length === 0) {
@@ -83,27 +82,23 @@ export const userDetails = async (req: Request, res: Response) => {
   }
 };
 
-// Edit User Details
 export const editUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const newCvFiles = req.files as Express.Multer.File[];
   const newCvUrls = newCvFiles ? newCvFiles.map((file) => file.path) : [];
 
-  // Retrieve the existing user details
   const userDetails = await UserDetails.findById(id);
 
   if (!userDetails) {
     return res.status(404).json({ error: "User details not found." });
   }
 
-  // Process cvLink
   let updatedCvLinks = req.body.cvLink || [];
   if (typeof updatedCvLinks === "string") {
     updatedCvLinks = [updatedCvLinks];
   }
 
-  // Remove null or empty values and add new CV links
   updatedCvLinks = updatedCvLinks.filter(
     (link: string) => link !== null && link !== ""
   );
@@ -115,7 +110,6 @@ export const editUser = async (req: Request, res: Response) => {
   };
 
   try {
-    // Update user details
     const updatedUserDetails = await UserDetails.findByIdAndUpdate(
       id,
       updatedData,
@@ -126,7 +120,6 @@ export const editUser = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User details not found." });
     }
 
-    // Emit the update event
     io.emit("user-updated", updatedUserDetails);
 
     res.status(200).json({

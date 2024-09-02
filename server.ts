@@ -19,7 +19,7 @@ connectDB();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://illustrious-hummingbird-5b31aa.netlify.app/",
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST"],
   },
 });

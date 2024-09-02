@@ -67,7 +67,11 @@ export const getProjects = async (req: Request, res: Response) => {
 
 export const updateProject = async (req: Request, res: Response) => {
   try {
-    const { technologies, image: updatedImageList, ...restData } = req.body;
+    const {
+      technologies,
+      image: updatedImageList = [],
+      ...restData
+    } = req.body;
 
     const singleTechnology =
       typeof technologies === "string" ? technologies.split(",") : [];
@@ -83,12 +87,7 @@ export const updateProject = async (req: Request, res: Response) => {
       return res.status(404).json({ msg: "Project not found" });
     }
 
-    const existingImages = Array.isArray(project.image) ? project.image : [];
-
-    const combinedImages =
-      newImageUrls.length > 0
-        ? [...existingImages, ...newImageUrls]
-        : existingImages;
+    const combinedImages = [...updatedImageList, ...newImageUrls];
 
     const updatedData = {
       ...restData,

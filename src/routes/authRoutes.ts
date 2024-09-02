@@ -7,7 +7,7 @@ import {
   userDetails,
 } from "../controllers/authController";
 // import { auth } from "../middleware/authMiddleware";
-import { upload } from "../config/cloudinary";
+import { upload } from "../configs/cloudinary";
 import { auth } from "../middleware/authMiddleware";
 
 const router = Router();

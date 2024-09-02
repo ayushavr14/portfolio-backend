@@ -5,7 +5,7 @@ import {
   deleteProject,
   getProjects,
 } from "../controllers/projectController";
-import { upload } from "../config/cloudinary";
+import { upload } from "../configs/cloudinary";
 import { auth } from "../middleware/authMiddleware";
 
 const router = Router();

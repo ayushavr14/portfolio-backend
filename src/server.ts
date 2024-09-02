@@ -3,7 +3,7 @@ dotenv.config();
 import express, { Application } from "express";
 import cors from "cors";
 import http from "http";
-import connectDB from "./config/db";
+import connectDB from "./configs/db";
 import authRoutes from "./routes/authRoutes";
 import projectRoutes from "./routes/projectRoutes";
 import skillRoutes from "./routes/skillRoutes";

@@ -19,7 +19,7 @@ connectDB();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Your React app URL
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
@@ -68,7 +68,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 

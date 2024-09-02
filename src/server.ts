@@ -11,7 +11,7 @@ import experienceRoutes from "./routes/experienceRoutes";
 import { Server } from "socket.io";
 
 const app: Application = express();
-const PORT = process.env.PORT || 5000; // Default port if not specified
+const PORT = process.env.PORT || 8000; // Default port if not specified
 
 // Connect to MongoDB
 connectDB();

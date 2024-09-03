@@ -68,7 +68,9 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(cors());
+const corsOptions = {};
+
+app.use(cors({ origin: process.env.CORS_ORIGINS?.split(",") }));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
